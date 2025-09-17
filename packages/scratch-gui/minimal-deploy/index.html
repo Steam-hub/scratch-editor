@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch Editor</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        #scratch { width: 100vw; height: 100vh; }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div id="scratch">
+        <div class="loading">Loading Scratch Editor...</div>
+    </div>
+
+    <script>
+        // Try to load from your local server as fallback
+        const script = document.createElement('script');
+        script.src = 'https://scratch.mit.edu/projects/editor/';
+        script.onerror = function() {
+            document.querySelector('.loading').innerHTML =
+                'Scratch Editor unavailable. Please run locally with: npm start';
+        };
+        document.head.appendChild(script);
+
+        // Alternative: Display message to run locally
+        setTimeout(function() {
+            document.querySelector('#scratch').innerHTML = `
+                <div style="padding: 40px; text-align: center;">
+                    <h1>Scratch Editor</h1>
+                    <p>To use the full Scratch editor, please run locally:</p>
+                    <code style="background: #f5f5f5; padding: 10px; display: block; margin: 20px 0;">
+                        cd /Users/abdullahghoneim/Desktop/scratch-editor/packages/scratch-gui<br>
+                        npm start
+                    </code>
+                    <p>Then open <a href="http://localhost:8601">http://localhost:8601</a></p>
+                    <p style="margin-top: 40px; color: #666;">
+                        Due to Cloudflare Pages 25MB file size limits, the full Scratch GUI (27MB) cannot be deployed directly.
+                    </p>
+                </div>
+            `;
+        }, 2000);
+    </script>
+</body>
+</html>
