@@ -44,6 +44,7 @@ import soundsIcon from './icon--sounds.svg';
 import DebugModal from '../debug-modal/debug-modal.jsx';
 import {setPlatform} from '../../reducers/platform.js';
 import {PLATFORM} from '../../lib/platform.js';
+import log from '../../lib/log.js';
 
 const messages = defineMessages({
     addExtension: {
@@ -100,6 +101,7 @@ const GUIComponent = props => {
         isTelemetryEnabled,
         isTotallyNormal,
         loading,
+        loadingState,
         logo,
         manuallySaveThumbnails,
         renderLogin,
@@ -117,6 +119,7 @@ const GUIComponent = props => {
         onNewSpriteClick,
         onNewLibraryCostumeClick,
         onNewLibraryBackdropClick,
+        onProjectLoaded,
         onProjectTelemetryEvent,
         onRequestCloseBackdropLibrary,
         onRequestCloseCostumeLibrary,
@@ -154,6 +157,49 @@ const GUIComponent = props => {
             setPlatform(props.platform);
         }
     }, [props.platform]);
+
+    useEffect(() => {
+        // Check for load_saved_scratch URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const savedScratchUrl = urlParams.get('load_saved_scratch');
+
+        if (savedScratchUrl && vm) {
+            console.log('🚀 DIRECT LOADING from URL:', savedScratchUrl);
+
+            // Simple direct approach - just fetch and load
+            fetch(savedScratchUrl, {
+                method: 'GET',
+                mode: 'cors'
+            })
+                .then(response => {
+                    console.log('✅ Got response:', response.ok);
+                    if (!response.ok) throw new Error('Failed to fetch');
+                    return response.arrayBuffer();
+                })
+                .then(arrayBuffer => {
+                    console.log('📁 Loading into VM, size:', arrayBuffer.byteLength);
+
+                    // Direct load into VM - this is what actually matters
+                    return vm.loadProject(arrayBuffer);
+                })
+                .then(() => {
+                    console.log('🎉 PROJECT LOADED SUCCESSFULLY!');
+
+                    // Force a refresh of the UI
+                    if (vm.runtime) {
+                        vm.runtime.requestRedraw();
+                    }
+
+                    // Force renderer to draw
+                    if (vm.renderer) {
+                        vm.renderer.draw();
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error:', error);
+                });
+        }
+    }, [vm]);
 
     const tabClassNames = {
         tabs: styles.tabs,
