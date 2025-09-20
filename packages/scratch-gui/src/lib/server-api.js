@@ -4,25 +4,69 @@ class ServerAPI {
     }
 
     async saveProject(projectId, projectData, metadata = {}) {
-        const url = projectId ? `${this.baseURL}/projects/${projectId}` : `${this.baseURL}/projects`;
-        const method = projectId ? 'PUT' : 'POST';
-
         const formData = new FormData();
         // projectData is already a Blob (ZIP file containing .sb3 project)
-        formData.append('project', projectData, 'project.sb3');
-        formData.append('metadata', JSON.stringify(metadata));
+        formData.append('file', projectData, 'project.sb3');
 
-        const response = await fetch(url, {
-            method,
-            body: formData,
-            credentials: 'include'
+        // Add metadata as additional form fields if needed
+        if (metadata && Object.keys(metadata).length > 0) {
+            formData.append('metadata', JSON.stringify(metadata));
+        }
+
+        // Extract token from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        console.log('token', token);
+        
+
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch('https://stage.api.steamhub.cloud/studio/Upload-file/', {
+            method: 'POST',
+            headers: headers,
+            body: formData
         });
 
         if (!response.ok) {
             throw new Error(`Failed to save project: ${response.statusText}`);
         }
 
-        return await response.json();
+        const uploadResult = await response.json();
+
+        // After successful upload, update the artifact with the cloudfront_url
+        const artifactId = urlParams.get('artifactId') || urlParams.get('artifact_id');
+        if (artifactId && uploadResult.cloudfront_url) {
+            try {
+                const updateHeaders = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) {
+                    updateHeaders['Authorization'] = `Bearer ${token}`;
+                }
+
+                const updateResponse = await fetch(`https://stage.api.steamhub.cloud/studio/artifacts/update/${artifactId}/`, {
+                    method: 'PUT',
+                    headers: updateHeaders,
+                    body: JSON.stringify({
+                        settings: JSON.stringify({
+                            cloudfront_url: uploadResult.cloudfront_url
+                        })
+                    })
+                });
+
+                if (!updateResponse.ok) {
+                    console.error('Failed to update artifact:', updateResponse.statusText);
+                }
+            } catch (error) {
+                console.error('Error updating artifact:', error);
+            }
+        }
+
+        return uploadResult;
     }
 
     async loadProject(projectId) {
