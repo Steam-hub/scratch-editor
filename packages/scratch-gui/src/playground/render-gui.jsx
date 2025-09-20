@@ -69,7 +69,8 @@ export default appTarget => {
                 canEditTitle
                 platform={PLATFORM.DESKTOP}
                 showTelemetryModal
-                canSave={false}
+                canSave={true}
+                useServerAPI={true}
                 onTelemetryModalCancel={handleTelemetryModalCancel}
                 onTelemetryModalOptIn={handleTelemetryModalOptIn}
                 onTelemetryModalOptOut={handleTelemetryModalOptOut}
@@ -79,7 +80,8 @@ export default appTarget => {
                 backpackVisible
                 showComingSoon
                 backpackHost={backpackHost}
-                canSave={false}
+                canSave={true}
+                useServerAPI={true}
                 onClickLogo={onClickLogo}
             />,
         appTarget);

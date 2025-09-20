@@ -4,6 +4,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {projectTitleInitialState} from '../reducers/project-title';
 import downloadBlob from '../lib/download-blob';
+import serverAPI from '../lib/server-api';
 /**
  * Project saver component passes a downloadProject function to its child.
  * It expects this child to be a function with the signature
@@ -30,7 +31,32 @@ class SB3Downloader extends React.Component {
             if (this.props.onSaveFinished) {
                 this.props.onSaveFinished();
             }
-            downloadBlob(this.props.projectFilename, content);
+
+            if (this.props.useServerAPI) {
+                // Save to server with current project ID or create new
+                const projectId = this.props.projectId || null;
+                const metadata = {
+                    title: this.props.projectTitle || 'Untitled Project',
+                    filename: this.props.projectFilename
+                };
+
+                serverAPI.saveProject(projectId, content, metadata)
+                    .then(response => {
+                        console.log('Project saved to server with ID:', response.id);
+                        // Optionally update the UI with the new project ID
+                        if (this.props.onProjectSaved) {
+                            this.props.onProjectSaved(response.id);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Failed to save project to server:', error);
+                        // Fallback to local download if server fails
+                        downloadBlob(this.props.projectFilename, content);
+                    });
+            } else {
+                // Original local download behavior
+                downloadBlob(this.props.projectFilename, content);
+            }
         });
     }
     render () {
@@ -56,8 +82,12 @@ SB3Downloader.propTypes = {
     children: PropTypes.func,
     className: PropTypes.string,
     onSaveFinished: PropTypes.func,
+    onProjectSaved: PropTypes.func,
     projectFilename: PropTypes.string,
-    saveProjectSb3: PropTypes.func
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    projectTitle: PropTypes.string,
+    saveProjectSb3: PropTypes.func,
+    useServerAPI: PropTypes.bool
 };
 SB3Downloader.defaultProps = {
     className: ''
@@ -65,7 +95,9 @@ SB3Downloader.defaultProps = {
 
 const mapStateToProps = state => ({
     saveProjectSb3: state.scratchGui.vm.saveProjectSb3.bind(state.scratchGui.vm),
-    projectFilename: getProjectFilename(state.scratchGui.projectTitle, projectTitleInitialState)
+    projectFilename: getProjectFilename(state.scratchGui.projectTitle, projectTitleInitialState),
+    projectId: state.scratchGui.projectState.projectId,
+    projectTitle: state.scratchGui.projectTitle
 });
 
 export default connect(

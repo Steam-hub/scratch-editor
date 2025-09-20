@@ -514,7 +514,7 @@ class MenuBar extends React.Component {
                                         >
                                             {this.props.intl.formatMessage(sharedMessages.loadFromComputerTitle)}
                                         </MenuItem>
-                                        <SB3Downloader>{(className, downloadProjectCallback) => (
+                                        <SB3Downloader useServerAPI={this.props.useServerAPI}>{(className, downloadProjectCallback) => (
                                             <MenuItem
                                                 className={className}
                                                 onClick={this.getSaveToComputerHandler(downloadProjectCallback)}
@@ -974,6 +974,7 @@ MenuBar.propTypes = {
     showComingSoon: PropTypes.bool,
     username: PropTypes.string,
     userOwnsProject: PropTypes.bool,
+    useServerAPI: PropTypes.bool,
 
     accountMenuOptions: AccountMenuOptionsPropTypes,
 

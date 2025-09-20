@@ -140,6 +140,7 @@ const GUIComponent = props => {
         useExternalPeripheralList,
         username,
         userOwnsProject,
+        useServerAPI,
         hideTutorialProjects,
         vm,
         ...componentProps
@@ -289,6 +290,7 @@ const GUIComponent = props => {
                     onToggleLoginOpen={onToggleLoginOpen}
                     userOwnsProject={userOwnsProject}
                     username={username}
+                    useServerAPI={useServerAPI}
                     accountMenuOptions={accountMenuOptions}
                 />
                 <Box className={styles.bodyWrapper}>
@@ -503,6 +505,7 @@ GUIComponent.propTypes = {
     useExternalPeripheralList: PropTypes.bool, // true for CDM, false for normal Scratch Link
     username: PropTypes.string,
     userOwnsProject: PropTypes.bool,
+    useServerAPI: PropTypes.bool,
     hideTutorialProjects: PropTypes.bool,
     vm: PropTypes.instanceOf(VM).isRequired
 };

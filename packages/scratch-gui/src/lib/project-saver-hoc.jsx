@@ -7,6 +7,7 @@ import VM from '@scratch/scratch-vm';
 import collectMetadata from '../lib/collect-metadata';
 import log from '../lib/log';
 import dataURItoBlob from '../lib/data-uri-to-blob';
+import serverAPI from '../lib/server-api';
 
 import {
     showAlertWithTimeout,
@@ -244,8 +245,16 @@ const ProjectSaverHOC = function (WrappedComponent) {
             const savedVMState = this.props.vm.toJSON();
             const scratchStorage = this.props.storage.scratchStorage;
 
+            // Use server API if available, otherwise fall back to original storage
             const saveProject = this.props.onUpdateProjectData ||
-                ((id, vmState, params) => this.props.storage.saveProject(id, vmState, params));
+                (this.props.useServerAPI ?
+                    ((id, _vmState, params) => {
+                        // Convert VM state to sb3 blob for server API
+                        return this.props.vm.saveProjectSb3().then(sb3Blob =>
+                            serverAPI.saveProject(id, sb3Blob, params)
+                        );
+                    }) :
+                    ((id, vmState, params) => this.props.storage.saveProject(id, vmState, params)));
 
             return Promise.all(this.props.vm.assets
                 .filter(asset => !asset.clean)
@@ -274,10 +283,14 @@ const ProjectSaverHOC = function (WrappedComponent) {
                         // Always save thumbnail on project creation
                         options?.isCreatingProject)) {
                         storeProjectThumbnail(this.props.vm, dataURI => {
-                            this.props.onUpdateProjectThumbnail(
-                                id,
-                                dataURItoBlob(dataURI)
-                            );
+                            if (this.props.useServerAPI) {
+                                serverAPI.saveProjectThumbnail(id, dataURItoBlob(dataURI));
+                            } else {
+                                this.props.onUpdateProjectThumbnail(
+                                    id,
+                                    dataURItoBlob(dataURI)
+                                );
+                            }
                         });
                     }
                     this.reportTelemetryEvent('projectDidSave');
@@ -403,6 +416,7 @@ const ProjectSaverHOC = function (WrappedComponent) {
         storage: GUIStoragePropType,
         setAutoSaveTimeoutId: PropTypes.func.isRequired,
         manuallySaveThumbnails: PropTypes.bool,
+        useServerAPI: PropTypes.bool,
         vm: PropTypes.instanceOf(VM).isRequired
     };
     ProjectSaverComponent.defaultProps = {
