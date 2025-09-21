@@ -37,8 +37,10 @@ class ServerAPI {
 
         const uploadResult = await response.json();
 
-        // After successful upload, update the artifact with the cloudfront_url
+        // Check user role and artifact ID for different API endpoints
         const artifactId = urlParams.get('artifactId') || urlParams.get('artifact_id');
+        const userRole = urlParams.get('role');
+
         if (artifactId && uploadResult.cloudfront_url) {
             try {
                 const updateHeaders = {
@@ -48,18 +50,36 @@ class ServerAPI {
                     updateHeaders['Authorization'] = `Bearer ${token}`;
                 }
 
-                const updateResponse = await fetch(`https://stage.api.steamhub.cloud/studio/artifacts/update/${artifactId}/`, {
-                    method: 'PUT',
-                    headers: updateHeaders,
-                    body: JSON.stringify({
-                        artifact_data: JSON.stringify({
-                            cloudfront_url: uploadResult.cloudfront_url
+                if (userRole === 'student') {
+                    // Student submission endpoint
+                    const submissionResponse = await fetch(`https://stage.api.steamhub.cloud/organization/results/artifact/${artifactId}/submission/`, {
+                        method: 'POST',
+                        headers: updateHeaders,
+                        body: JSON.stringify({
+                            content: JSON.stringify({
+                                cloudfront_url: uploadResult.cloudfront_url
+                            })
                         })
-                    })
-                });
+                    });
 
-                if (!updateResponse.ok) {
-                    console.error('Failed to update artifact:', updateResponse.statusText);
+                    if (!submissionResponse.ok) {
+                        console.error('Failed to submit student artifact:', submissionResponse.statusText);
+                    }
+                } else {
+                    // Regular artifact update endpoint (for non-students)
+                    const updateResponse = await fetch(`https://stage.api.steamhub.cloud/studio/artifacts/update/${artifactId}/`, {
+                        method: 'PUT',
+                        headers: updateHeaders,
+                        body: JSON.stringify({
+                            settings: JSON.stringify({
+                                cloudfront_url: uploadResult.cloudfront_url
+                            })
+                        })
+                    });
+
+                    if (!updateResponse.ok) {
+                        console.error('Failed to update artifact:', updateResponse.statusText);
+                    }
                 }
             } catch (error) {
                 console.error('Error updating artifact:', error);
