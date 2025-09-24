@@ -71,7 +71,7 @@ class ServerAPI {
                         method: 'PUT',
                         headers: updateHeaders,
                         body: JSON.stringify({
-                            settings: JSON.stringify({
+                            artifact_data: JSON.stringify({
                                 cloudfront_url: uploadResult.cloudfront_url
                             })
                         })

@@ -489,7 +489,7 @@ class MenuBar extends React.Component {
                                             {newProjectMessage}
                                         </MenuItem>
                                     </MenuSection>
-                                    {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
+                                    {/* {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
                                         <MenuSection>
                                             {this.props.canSave && (
                                                 <MenuItem onClick={this.handleClickSave}>
@@ -507,7 +507,7 @@ class MenuBar extends React.Component {
                                                 </MenuItem>
                                             )}
                                         </MenuSection>
-                                    )}
+                                    )} */}
                                     <MenuSection>
                                         <MenuItem
                                             onClick={this.props.onStartSelectingFileUpload}
@@ -520,7 +520,7 @@ class MenuBar extends React.Component {
                                                 onClick={this.getSaveToComputerHandler(downloadProjectCallback)}
                                             >
                                                 <FormattedMessage
-                                                    defaultMessage="Save to your computer"
+                                                    defaultMessage="Save The Project"
                                                     description="Menu bar item for downloading a project to your computer" // eslint-disable-line max-len
                                                     id="gui.menuBar.downloadToComputer"
                                                 />
