@@ -25,7 +25,7 @@ class ServerAPI {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch('https://stage.api.steamhub.cloud/studio/Upload-file/', {
+        const response = await fetch('https://api.steamhub.cloud/studio/Upload-file/', {
             method: 'POST',
             headers: headers,
             body: formData
@@ -52,7 +52,7 @@ class ServerAPI {
 
                 if (userRole === 'student') {
                     // Student submission endpoint
-                    const submissionResponse = await fetch(`https://stage.api.steamhub.cloud/organization/results/artifact/${artifactId}/submission/`, {
+                    const submissionResponse = await fetch(`https://api.steamhub.cloud/organization/results/artifact/${artifactId}/submission/`, {
                         method: 'POST',
                         headers: updateHeaders,
                         body: JSON.stringify({
@@ -67,7 +67,7 @@ class ServerAPI {
                     }
                 } else {
                     // Regular artifact update endpoint (for non-students)
-                    const updateResponse = await fetch(`https://stage.api.steamhub.cloud/studio/artifacts/update/${artifactId}/`, {
+                    const updateResponse = await fetch(`https://api.steamhub.cloud/studio/artifacts/update/${artifactId}/`, {
                         method: 'PUT',
                         headers: updateHeaders,
                         body: JSON.stringify({
