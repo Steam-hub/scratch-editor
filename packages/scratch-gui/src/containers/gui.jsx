@@ -74,7 +74,7 @@ class GUI extends React.Component {
     render () {
         if (this.props.isError) {
             throw new Error(
-                `Error in Scratch GUI [location=${window.location}]: ${this.props.error}`);
+                `Error in Scratch GUI [location=${window.location.origin}${window.location.pathname}]: ${this.props.error}`);
         }
         const {
             /* eslint-disable no-unused-vars */

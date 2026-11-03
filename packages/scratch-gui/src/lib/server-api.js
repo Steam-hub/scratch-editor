@@ -3,8 +3,8 @@
 // other host, gets production, as before.
 const STRING_APIS = ['https://api.steamhub.cloud', 'https://stage.api.steamhub.cloud'];
 
-export const stringApi = (search = window.location.search) => {
-    const named = (new URLSearchParams(search).get('base_url') || '').replace(/\/+$/, '');
+const stringApi = () => {
+    const named = (new URLSearchParams(window.location.search).get('base_url') || '').replace(/\/+$/, '');
     return STRING_APIS.includes(named) ? named : STRING_APIS[0];
 };
 
@@ -26,13 +26,14 @@ class ServerAPI {
         // Extract token from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
+        const api = stringApi(); // one host for the whole save
 
         const headers = {};
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`${stringApi()}/studio/Upload-file/`, {
+        const response = await fetch(`${api}/studio/Upload-file/`, {
             method: 'POST',
             headers: headers,
             body: formData
@@ -59,7 +60,7 @@ class ServerAPI {
 
                 if (userRole === 'student') {
                     // Student submission endpoint
-                    const submissionResponse = await fetch(`${stringApi()}/organization/results/artifact/${artifactId}/submission/`, {
+                    const submissionResponse = await fetch(`${api}/organization/results/artifact/${artifactId}/submission/`, {
                         method: 'POST',
                         headers: updateHeaders,
                         body: JSON.stringify({
@@ -74,7 +75,7 @@ class ServerAPI {
                     }
                 } else {
                     // Regular artifact update endpoint (for non-students)
-                    const updateResponse = await fetch(`${stringApi()}/studio/artifacts/update/${artifactId}/`, {
+                    const updateResponse = await fetch(`${api}/studio/artifacts/update/${artifactId}/`, {
                         method: 'PUT',
                         headers: updateHeaders,
                         body: JSON.stringify({
